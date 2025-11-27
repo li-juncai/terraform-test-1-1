@@ -2,7 +2,7 @@ variable "access_key" {
   type      = string
   sensitive = true
 }
-variable "alicloud_secret_key" {
+variable "secret_key" {
   type      = string
   sensitive = true
 }
