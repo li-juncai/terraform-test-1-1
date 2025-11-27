@@ -1,5 +1,5 @@
 provider "alicloud" {
-  region = "cn-hangzhou"
+  region = "cn-shanghai"
   access_key = var.access_key
   secret_key = var.secret_key
 }
