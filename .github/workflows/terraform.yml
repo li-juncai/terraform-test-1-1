@@ -1,0 +1,47 @@
+name: Terraform Deploy
+on: [push]  # 触发条件：主分支push时自动执行
+
+jobs:
+  deploy:
+    runs-on: ubuntu-latest  # 运行环境
+    permissions:
+      contents: read
+      id-token: write  # 需OpenID Connect权限以安全访问HCP Terraform
+
+    steps:
+      # 1. 检出代码
+      - name: Checkout
+        uses: actions/checkout@v3
+
+      # 2. 配置HCP Terraform身份验证
+      - name: Configure HCP Terraform
+        run: |
+          echo "TF_API_TOKEN=${{ secrets.TF_API_TOKEN }}" > .env
+          source .env
+
+      # 3. 初始化Terraform（自动下载Provider）
+      - name: Terraform Init
+        uses: hashicorp/terraform-github-actions@master
+        with:
+          tf_actions_version: 1.5.7
+          tf_actions_subcommand: init
+
+      # 4. 验证语法与计划
+      - name: Terraform Validate & Plan
+        uses: hashicorp/terraform-github-actions@master
+        with:
+          tf_actions_version: 1.5.7
+          tf_actions_subcommand: plan
+          TF_CLOUD_ORGANIZATION: ljc-test-1  # 替换为HCP组织名
+          TF_API_TOKEN: ${{ secrets.TF_API_TOKEN }}
+
+      # 5. 执行部署（自动应用变更）
+      - name: Terraform Apply
+        uses: hashicorp/terraform-github-actions@master
+        if: github.ref == 'refs/heads/main'  # 仅主分支执行
+        with:
+          tf_actions_version: 1.5.7
+          tf_actions_subcommand: apply
+          TF_CLOUD_ORGANIZATION: ljc-test-1
+          TF_API_TOKEN: ${{ secrets.TF_API_TOKEN }}
+          auto-approve: true  # 自动批准计划，生产环境需谨慎
