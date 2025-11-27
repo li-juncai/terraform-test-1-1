@@ -1,4 +1,4 @@
-variable "alicloud_access_key" {
+variable "access_key" {
   type      = string
   sensitive = true
 }
